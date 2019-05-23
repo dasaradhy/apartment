@@ -39,6 +39,12 @@ module Apartment
       end
     end
 
+    config.after_initialize do
+      Apartment.connection_class.connection_pool.with_connection do
+        Apartment::Tenant.init
+      end
+    end
+
     #
     #   Ensure rake tasks are loaded
     #
