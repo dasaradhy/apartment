@@ -106,6 +106,17 @@ module Apartment
         end
       end
 
+      def process_included_models
+        included_models = Apartment.included_models
+
+        ActiveRecord::Base.descendants.each do |model|
+          unless ( included_models.include?(model.to_s) || model.table_name.blank? )
+            process_excluded_model(model.to_s)
+          end
+        end
+
+      end
+
       #   Reset the tenant connection to the default
       #
       def reset
