@@ -18,7 +18,7 @@ module Apartment
       ActiveRecord::ModelSchema::ClassMethods.module_eval do
         def reset_table_name #:nodoc:
           _table_name = if abstract_class?
-                          superclass == Base ? nil : superclass.table_name
+                          superclass == ::ActiveRecord::Base ? nil : superclass.table_name
                         elsif superclass.abstract_class?
                           superclass.table_name || compute_table_name
                         else
