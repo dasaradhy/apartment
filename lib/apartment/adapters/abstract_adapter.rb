@@ -107,14 +107,9 @@ module Apartment
       end
 
       def process_included_models
-        included_models = Apartment.included_models
-
-        ActiveRecord::Base.descendants.each do |model|
-          unless ( included_models.include?(model.to_s) || model.table_name.blank? )
-            process_excluded_model(model.to_s)
-          end
+        Apartment.included_models.each do |included_model|
+          process_included_model(included_model)
         end
-
       end
 
       #   Reset the tenant connection to the default
@@ -135,6 +130,10 @@ module Apartment
 
       def process_excluded_model(excluded_model)
         excluded_model.constantize.establish_connection @config
+      end
+
+      def process_included_model(included_model)
+        raise "Not supported by #{self.class.name}"
       end
 
       def drop_command(conn, tenant)

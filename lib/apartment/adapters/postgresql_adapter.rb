@@ -55,6 +55,14 @@ module Apartment
         end
       end
 
+      def process_included_model(included_model)
+        included_model.constantize.tap do |klass|
+          table_name = klass.table_name.gsub(/^#{default_tenant}\./,'')
+
+          klass.table_name = table_name
+        end
+      end
+
       def drop_command(conn, tenant)
         conn.execute(%{DROP SCHEMA "#{tenant}" CASCADE})
       end

@@ -15,6 +15,19 @@ module Apartment
     #   Initialize Apartment config options such as excluded_models
     #
     def init
+      ActiveRecord::ModelSchema::ClassMethods.module_eval do
+        def reset_table_name #:nodoc:
+          _table_name = if abstract_class?
+                          superclass == Base ? nil : superclass.table_name
+                        elsif superclass.abstract_class?
+                          superclass.table_name || compute_table_name
+                        else
+                          compute_table_name
+                        end
+          self.table_name = "#{::Apartment.default_tenant}."+_table_name 
+        end
+      end
+
       if Apartment.included_models.present?
         adapter.process_included_models
       else
