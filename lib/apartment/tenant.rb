@@ -24,7 +24,10 @@ module Apartment
                         else
                           compute_table_name
                         end
-          self.table_name = "#{::Apartment.default_tenant}."+_table_name unless _table_name.nil?
+          unless _table_name.nil?
+            _table_name.gsub!(/^#{::Apartment.default_tenant}\./,'')
+            self.table_name = "#{::Apartment.default_tenant}."+_table_name
+          end
         end
       end
 
