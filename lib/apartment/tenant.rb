@@ -15,6 +15,10 @@ module Apartment
     #   Initialize Apartment config options such as excluded_models
     #
     def init
+      # Force all models loaded prior to recalculate table names
+      ::ActiveRecord::Base.descendants.each do |model|
+        model.table_name = nil
+      end
       ActiveRecord::ModelSchema::ClassMethods.module_eval do
         def reset_table_name #:nodoc:
           _table_name = if abstract_class?
