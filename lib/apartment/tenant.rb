@@ -15,28 +15,30 @@ module Apartment
     #   Initialize Apartment config options such as excluded_models
     #
     def init
-      ActiveRecord::ModelSchema::ClassMethods.module_eval do
-        def reset_table_name #:nodoc:
-          _table_name = if abstract_class?
-                          superclass == ::ActiveRecord::Base ? nil : superclass.table_name
-                        elsif superclass.abstract_class?
-                          superclass.table_name || compute_table_name
-                        else
-                          compute_table_name
-                        end
-          unless _table_name.nil?
-            _table_name = _table_name.gsub(/^#{::Apartment.default_tenant}\./,'')
-            self.table_name = "#{::Apartment.default_tenant}."+_table_name
+      if Apartment.included_models.present?
+        ActiveRecord::ModelSchema::ClassMethods.module_eval do
+          def reset_table_name #:nodoc:
+            _table_name = if abstract_class?
+                            superclass == ::ActiveRecord::Base ? nil : superclass.table_name
+                          elsif superclass.abstract_class?
+                            superclass.table_name || compute_table_name
+                          else
+                            compute_table_name
+                          end
+            unless _table_name.nil?
+              _table_name = _table_name.gsub(/^#{::Apartment.default_tenant}\./,'')
+              self.table_name = "#{::Apartment.default_tenant}."+_table_name
+            end
           end
         end
-      end
 
-      # Force all models loaded prior to recalculate table names
-      ::ActiveRecord::Base.descendants.each do |model|
-        model.reset_table_name
-      end
+        # Move all models to the default schema before applying exceptions!
+        ::ActiveRecord::Base.descendants.each do |model|
+          if model.table_name.present? && model.table_name !~ /^#{::Apartment.default_tenant}./
+            model.table_name = "#{::Apartment.default_tenant}." + model.table_name
+          end
+        end
 
-      if Apartment.included_models.present?
         adapter.process_included_models
       else
         adapter.process_excluded_models
