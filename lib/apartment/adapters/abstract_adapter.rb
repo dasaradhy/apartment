@@ -111,7 +111,13 @@ module Apartment
 
         ActiveRecord::Base.descendants.each do |model|
           unless ( included_models.include?(model.to_s) || model.table_name.blank? )
-            process_excluded_model(model.to_s)
+            # primary::SchemaMigration is a magical model that appears to break the new activerecord
+            # skip any model that starts with a non standard module name
+            if model.to_s =~ /\A[a-z]/
+              Rails.logger.error("WARN: Failed Excluding model #{model.to_s}. Ignoring and continuing!")
+            else
+              process_excluded_model(model.to_s)
+            end
           end
         end
 
